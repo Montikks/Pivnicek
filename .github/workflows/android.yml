@@ -26,6 +26,11 @@ jobs:
         sed -i 's|kotlinCompilerExtensionVersion.*|kotlinCompilerExtensionVersion "1.5.12"|' \
           pivnicek_simple/android/app/build.gradle
 
+    # 6 – opravíme typ StateFlow → Flow ve ViewModelu
+    - name: Fix ViewModel total type
+      run: |
+        sed -i 's/StateFlow<Double>/Flow<Double>/' \
+          pivnicek_simple/android/app/src/main/java/com/pivnicek/BeerViewModel.kt
     # 5 – Java 17 i pro Javac
     - name: Force Java 17 compileOptions
       run: |
