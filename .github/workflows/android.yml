@@ -44,3 +44,7 @@ jobs:
       with:
         name: Pivnicek-debug.apk
         path: pivnicek_simple/android/app/build/outputs/apk/debug/app-debug.apk
+    - name: Locate settings.gradle
+      run: |
+        echo "--- hledej settings.gradle ---"
+        find . -name settings.gradle
