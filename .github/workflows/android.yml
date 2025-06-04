@@ -5,71 +5,76 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    # 1 – checkout
+    # 1 – stáhneme repo
     - uses: actions/checkout@v4
 
-    # 2 – rozbalit zdroják
+    # 2 – rozbalíme zdroják
     - name: Unzip project
       run: unzip PivnicekSimple.zip
 
-    # 3 – ikonka → systémová
+    # 3 – manifest: systémová ikonka (aby nechyběl soubor v res/)
     - name: Patch manifest icon
       run: |
         find . -name AndroidManifest.xml -exec \
           sed -i 's|@mipmap/ic_launcher|@android:drawable/ic_menu_info_details|g' {} +
 
-    # 4 – Compose compiler 1.5.12
-    - name: Set compose compiler 1.5.12
+    # 4 – Compose compiler: přepnout na stabilní 1.5.12
+    - name: Force compose-compiler 1.5.12
       run: |
         sed -i 's|kotlinCompilerExtensionVersion.*|kotlinCompilerExtensionVersion "1.5.12"|' \
           pivnicek_simple/android/app/build.gradle
 
-    # 6 – opravíme typ StateFlow → Flow ve ViewModelu
+    # 5 – přidat compileOptions { …17 } do build.gradle
+    - name: Set Java 17 compileOptions
+      run: |
+        APP_GRADLE="pivnicek_simple/android/app/build.gradle"
+        grep -q 'sourceCompatibility JavaVersion.VERSION_17' "$APP_GRADLE" || \
+          sed -i '/^android {/a\    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }' "$APP_GRADLE"
+
+    # 6 – ViewModel: StateFlow → Flow
     - name: Fix ViewModel total type
       run: |
         sed -i 's/StateFlow<Double>/Flow<Double>/' \
           pivnicek_simple/android/app/src/main/java/com/pivnicek/BeerViewModel.kt
-    # 7 – doplníme import Flow do ViewModelu
+
+    # 7 – ViewModel: doplnit import Flow
     - name: Add Flow import
       run: |
         sed -i '/import kotlinx.coroutines.flow.MutableStateFlow/a\import kotlinx.coroutines.flow.Flow' \
           pivnicek_simple/android/app/src/main/java/com/pivnicek/BeerViewModel.kt
-          
-    # 5 – Java 17 i pro Javac
-    - name: Force Java 17 compileOptions
-      run: |
-        APP_GRADLE="pivnicek_simple/android/app/build.gradle"
-        # vlož compileOptions dovnitř bloku android { ... } (pokud tam už není)
-        grep -q 'compileOptions' "$APP_GRADLE" || \
-          sed -i '/^android {/a\    compileOptions {\n        sourceCompatibility JavaVersion.VERSION_17\n        targetCompatibility JavaVersion.VERSION_17\n    }' "$APP_GRADLE"
 
-    # 6 – JDK 17
+    # 8 – BeerScreen: u Flow je potřeba počáteční hodnota v collectAsState
+    - name: Ensure initial value in BeerScreen
+      run: |
+        sed -i 's/collectAsState() *$/collectAsState(0.0)/' \
+          pivnicek_simple/android/app/src/main/java/com/pivnicek/ui/BeerScreen.kt
+
+    # 9 – JDK 17
     - uses: actions/setup-java@v4
       with:
         distribution: temurin
         java-version: '17'
 
-    # 7 – Android SDK
+    # 10 – Android SDK + licence
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
       with:
         api-level: 34
         ndk: false
 
-    # 8 – Gradle 8.6
+    # 11 – Gradle 8.6
     - uses: gradle/gradle-build-action@v2
       with:
         gradle-version: 8.6
 
-    # 9 – build
+    # 12 – sestavení debug APK
     - name: Build debug APK
       run: |
         cd pivnicek_simple/android
         gradle assembleDebug
 
-    # 10 – artefakt
+    # 13 – publikujeme APK jako artifact
     - uses: actions/upload-artifact@v4
       with:
         name: Pivnicek-debug.apk
