@@ -1,60 +1,60 @@
 name: Build-APK
+
 on:
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-    # 1) stáhneme repo
-    - uses: actions/checkout@v4
 
-    # 2) rozbalíme zdrojový ZIP
+    steps:
+    # 1 – stáhneme obsah repozitáře
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2 – rozbalíme zdrojový ZIP
     - name: Unzip project
       run: unzip PivnicekSimple.zip
 
-    # 3) opravíme ikonu v manifestu
+    # 3 – nahradíme chybějící ikonku systémovou
     - name: Patch manifest icon
       run: |
         find . -name AndroidManifest.xml -exec \
           sed -i 's|@mipmap/ic_launcher|@android:drawable/ic_menu_info_details|g' {} +
 
-    # 4) doplníme správnou verzi Compose compileru 1.5.12
-    - name: Patch compose compiler version
+    # 4 – přepíšeme řádek s Compose-compilerem na stabilní 1.5.12
+    - name: Set compose compiler 1.5.12
       run: |
-        APP_GRADLE="pivnicek_simple/android/app/build.gradle"
-        # přidej řádek s proměnnou, pokud tam ještě není
-        grep -q compose_compiler_version "$APP_GRADLE" || \
-          sed -i '1idef compose_compiler_version = "1.5.12"' "$APP_GRADLE"
-        # přepiš kotlinCompilerExtensionVersion
-        sed -i 's/kotlinCompilerExtensionVersion[[:space:]]\+compose_ui_version/kotlinCompilerExtensionVersion compose_compiler_version/' "$APP_GRADLE"
+        sed -i 's|kotlinCompilerExtensionVersion.*|kotlinCompilerExtensionVersion "1.5.12"|' \
+          pivnicek_simple/android/app/build.gradle
 
-    # 5) JDK 17
-    - uses: actions/setup-java@v4
+    # 5 – JDK 17
+    - name: Set up JDK
+      uses: actions/setup-java@v4
       with:
         distribution: temurin
-        java-version: 17
+        java-version: '17'
 
-    # 6) Android SDK + licence
+    # 6 – Android SDK + licence
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
       with:
         api-level: 34
         ndk: false
 
-    # 7) Gradle 8.6
+    # 7 – Gradle 8.6
     - name: Set up Gradle 8.6
       uses: gradle/gradle-build-action@v2
       with:
         gradle-version: 8.6
 
-    # 8) sestavení debug APK
+    # 8 – sestavíme debug APK
     - name: Build debug APK
       run: |
         cd pivnicek_simple/android
         gradle assembleDebug
 
-    # 9) publikujeme artefakt
+    # 9 – nahrajeme artefakt ke stažení
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
