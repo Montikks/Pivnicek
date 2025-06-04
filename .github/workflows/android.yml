@@ -31,6 +31,12 @@ jobs:
       run: |
         sed -i 's/StateFlow<Double>/Flow<Double>/' \
           pivnicek_simple/android/app/src/main/java/com/pivnicek/BeerViewModel.kt
+    # 7 – doplníme import Flow do ViewModelu
+    - name: Add Flow import
+      run: |
+        sed -i '/import kotlinx.coroutines.flow.MutableStateFlow/a\import kotlinx.coroutines.flow.Flow' \
+          pivnicek_simple/android/app/src/main/java/com/pivnicek/BeerViewModel.kt
+          
     # 5 – Java 17 i pro Javac
     - name: Force Java 17 compileOptions
       run: |
