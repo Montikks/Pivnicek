@@ -11,12 +11,9 @@ jobs:
 
     - name: Patch manifest icon
       run: |
-         sed -i 's|@mipmap/ic_launcher|@android:drawable/ic_menu_info_details|g' \
-         pivnicek_simple/android/app/src/main/
-    - name: List manifests
-      run: |
-        echo "--- Manifesty nalezené v repozitáři ---"
-        find . -name AndroidManifest.xml
+        # najdeme VŠECHNY AndroidManifest.xml a v každém nahradíme ikonu
+        find . -name AndroidManifest.xml -exec \
+          sed -i 's|@mipmap/ic_launcher|@android:drawable/ic_menu_info_details|g' {} +
   
     - uses: actions/setup-java@v4
       with:
