@@ -7,44 +7,47 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    # 1) stáhneme obsah repa
     - uses: actions/checkout@v4
 
+    # 2) rozbalíme ZIP se zdrojáky
+    - name: Unzip project
+      run: unzip PivnicekSimple.zip
+
+    # 3) nahradíme ikonu ve VŠECH manifestech
     - name: Patch manifest icon
       run: |
-        # najdeme VŠECHNY AndroidManifest.xml a v každém nahradíme ikonu
         find . -name AndroidManifest.xml -exec \
           sed -i 's|@mipmap/ic_launcher|@android:drawable/ic_menu_info_details|g' {} +
-  
+
+    # 4) JDK 17
     - uses: actions/setup-java@v4
       with:
-        distribution: 'temurin'
-        java-version: '17'
+        distribution: temurin
+        java-version: 17
 
-         # nainstalujeme Android SDK + licence
+    # 5) Android SDK + licence
     - name: Set up Android SDK
       uses: android-actions/setup-android@v3
       with:
         api-level: 34
         ndk: false
 
-    # nainstalujeme Gradle 8.6
+    # 6) Gradle 8.6
     - name: Set up Gradle 8.6
       uses: gradle/gradle-build-action@v2
       with:
         gradle-version: 8.6
 
-    # sestavíme debug APK
+    # 7) build debug APK
     - name: Build debug APK
       run: |
         cd pivnicek_simple/android
         gradle assembleDebug
 
+    # 8) nahrajeme artefakt
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: Pivnicek-debug.apk
         path: pivnicek_simple/android/app/build/outputs/apk/debug/app-debug.apk
-    - name: Locate settings.gradle
-      run: |
-        echo "--- hledej settings.gradle ---"
-        find . -name settings.gradle
