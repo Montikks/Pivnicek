@@ -1,0 +1,30 @@
+name: Build-APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    # Rozbalíme přiložený archiv se zdrojovým kódem
+    - name: Unzip project
+      run: unzip PivnicekSimple.zip
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Build debug APK
+      run: |
+        cd pivnicek_simple/android
+        ./gradlew assembleDebug
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Pivnicek-debug.apk
+        path: pivnicek_simple/android/app/build/outputs/apk/debug/app-debug.apk
