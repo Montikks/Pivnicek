@@ -18,17 +18,24 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-        # rychlá instalace Gradlu do běžícího runneru
-    - name: Install Gradle
-      run: |
-        sudo apt-get update -y
-        sudo apt-get install -y gradle
+         # nainstalujeme Android SDK + licence
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
+        ndk: false
 
-    # sestavení APK pomocí „gradle …“
+    # nainstalujeme Gradle 8.4
+    - name: Set up Gradle 8.4
+      uses: gradle/gradle-build-action@v2
+      with:
+        gradle-version: 8.4
+
+    # sestavíme debug APK
     - name: Build debug APK
       run: |
         cd pivnicek_simple/android
-        gradle assembleDebug          # ⬅️  už nevoláme ./gradlew
+        gradle assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
