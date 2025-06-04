@@ -18,10 +18,17 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
 
-    - name: Build debug APK
-      run: |
-        cd pivnicek_simple/android
-        ./gradlew assembleDebug
+    - # 1) rychlá instalace Gradlu do běžícího runneru
+- name: Install Gradle
+  run: |
+    sudo apt-get update -y
+    sudo apt-get install -y gradle
+
+# 2) sestavení APK pomocí „gradle …“
+- name: Build debug APK
+  run:
+    cd pivnicek_simple/android
+    gradle assembleDebug            # ⬅️  už nevoláme ./gradlew
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
