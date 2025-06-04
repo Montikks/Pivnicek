@@ -13,7 +13,10 @@ jobs:
       run: |
          sed -i 's|@mipmap/ic_launcher|@android:drawable/ic_menu_info_details|g' \
          pivnicek_simple/android/app/src/main/AndroidManifest.xml
-
+    - name: List manifests
+      run: |
+         find . -name AndroidManifest.xml
+         
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
