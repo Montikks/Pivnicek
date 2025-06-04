@@ -9,9 +9,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # Rozbalíme přiložený archiv se zdrojovým kódem
-    - name: Unzip project
-      run: unzip PivnicekSimple.zip
+    - name: Patch manifest icon
+      run: |
+         sed -i 's|@mipmap/ic_launcher|@android:drawable/ic_menu_info_details|g' \
+         pivnicek_simple/android/app/src/main/AndroidManifest.xml
 
     - uses: actions/setup-java@v4
       with:
